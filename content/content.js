@@ -15,7 +15,7 @@ async function checkCurrentPage() {
       showWarning(response.domain, response.matchedDomain, response.reason);
     }
   } catch (error) {
-    console.error('Failed to check domain:', error);
+    console.error('Nepodařilo se zkontrolovat doménu:', error);
   }
 }
 

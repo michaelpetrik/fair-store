@@ -277,6 +277,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true; // Asynchronní odpověď
   }
 
+  if (message.action === 'closeTab') {
+    // Zavřít záložku
+    if (sender.tab && sender.tab.id) {
+      chrome.tabs.remove(sender.tab.id).then(() => {
+        console.log('Záložka s rizikovým e-shopem byla zavřena');
+        sendResponse({ success: true });
+      }).catch((error) => {
+        console.error('Chyba při zavírání záložky:', error);
+        sendResponse({ success: false, error: error.message });
+      });
+
+      return true; // Asynchronní odpověď
+    }
+  }
+
   return false;
 });
 

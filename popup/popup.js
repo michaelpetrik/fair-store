@@ -117,6 +117,8 @@ function setupEventListeners() {
   const rateBtn = document.getElementById('rate-btn');
   if (rateBtn) {
     rateBtn.addEventListener('click', () => {
+      // TODO: Po zveřejnění v Chrome Web Store nahraďte YOUR_EXTENSION_ID skutečným ID rozšíření
+      // ID najdete v URL po publikaci: https://chrome.google.com/webstore/detail/<EXTENSION_ID>
       chrome.tabs.create({
         url: 'https://chrome.google.com/webstore/detail/YOUR_EXTENSION_ID/reviews'
       });
@@ -256,7 +258,7 @@ async function handleReportStore() {
       });
 
       if (response.ok) {
-        alert('✅ Děkujeme! Podezřelá stránka byla úspěšně nahlášena.\n\nNaše týmprověří hlášení a případně přidá stránku do databáze.');
+        alert('✅ Děkujeme! Podezřelá stránka byla úspěšně nahlášena.\n\nNáš tým prověří hlášení a případně přidá stránku do databáze.');
       } else {
         throw new Error('Chyba serveru');
       }
