@@ -1,13 +1,15 @@
 # Fair Store - Ochrana před podvodnými e-shopy
 
-Chrome rozšíření pro ochranu českých spotřebitelů před podvodnými e-commerce stránkami.
+Chrome rozšíření pro ochranu českých spotřebitelů před podvodnými e-commerce stránkami pomocí oficiálních dat **České obchodní inspekce (ČOI)**.
 
 ## Funkce
 
-- ⚠️ **Varování při návštěvě podvodných stránek** - Automatická detekce podezřelých domén
+- ⚠️ **Varování při návštěvě rizikových e-shopů** - Automatická detekce domén ze seznamu ČOI
+- 🏛️ **Oficiální data ČOI** - Využívá aktuální seznam rizikových e-shopů z coi.gov.cz
 - 🛡️ **Okamžitá ochrana** - Zobrazení varovného popup okna při načtení stránky
 - 🔒 **Bezpečné akce** - Možnost zavřít záložku nebo pokračovat na vlastní riziko
-- 📊 **Databáze podvodných stránek** - Neustále aktualizovaný seznam známých podvodníků
+- 📋 **Podrobnosti od ČOI** - Zobrazení důvodu zařazení do seznamu rizikových e-shopů
+- 🔄 **Automatická aktualizace** - Data se stahují při každém spuštění prohlížeče
 
 ## Instalace
 
@@ -32,23 +34,20 @@ Chrome rozšíření pro ochranu českých spotřebitelů před podvodnými e-co
 
 ### Testování
 
-Pro testování funkčnosti můžete zkusit navštívit jednu z testovacích domén v `data/scam-domains.json`:
-
-- example-scam-shop.com
-- fake-eshop.cz
-- podvodny-obchod.cz
+Rozšíření využívá aktuální seznam rizikových e-shopů z ČOI:
+- Data se stahují z: `https://www.coi.gov.cz/userdata/files/dokumenty-ke-stazeni/open-data/rizikove-seznam.csv`
+- Pro testování navštivte nějakou doménu ze seznamu ČOI
+- Seznam můžete zobrazit v developer console po načtení rozšíření
 
 ## Struktura projektu
 
 ```
 fair-store/
 ├── manifest.json           # Chrome extension manifest (v3)
-├── background.js          # Background service worker
+├── background.js          # Background service worker + ČOI CSV parser
 ├── content/
 │   ├── content.js        # Content script (varovací popup)
 │   └── warning.css       # Styly pro varovací popup
-├── data/
-│   └── scam-domains.json # Databáze podvodných domén
 ├── popup/
 │   ├── popup.html        # UI rozšíření
 │   ├── popup.js          # Logika popup
@@ -62,52 +61,59 @@ fair-store/
 
 ## Jak to funguje
 
-1. **Detekce**: Background script monitoruje všechny návštěvy stránek
-2. **Kontrola**: Každá doména je porovnána s databází podvodných e-shopů
-3. **Varování**: Pokud je nalezena shoda, content script zobrazí varovní popup
-4. **Akce uživatele**:
+1. **Stažení dat**: Při spuštění se stáhne aktuální CSV seznam z ČOI
+2. **Parsing CSV**: Background script zparsuje CSV a extrahuje domény + důvody
+3. **Ukládání**: Data se uloží do chrome.storage pro offline použití
+4. **Monitoring**: Background script monitoruje všechny návštěvy stránek
+5. **Kontrola**: Každá doména je porovnána se seznamem ČOI
+6. **Varování**: Pokud je nalezena shoda, content script zobrazí varovní popup
+7. **Akce uživatele**:
    - **Zavřít záložku** - Okamžitě zavře aktuální záložku
+   - **Zobrazit podrobnosti** - Rozbalí důvod od ČOI
    - **Ignorovat** - Skryje varování a umožní pokračovat
 
 ## Varování popup
 
-Při detekci podvodné stránky se zobrazí červený overlay s:
+Při detekci rizikového e-shopu se zobrazí červený overlay s:
 
-- ⚠️ Varováním o podezřelé stránce
-- 📋 Seznamem důvodů varování
-- 🛡️ Doporučením nedůvěřovat stránce
-- 🔴 Tlačítkem "Zavřít záložku" - bezpečně zavře stránku
-- ⚪ Tlačítkem "Ignorovat" - pokračuje na vlastní riziko
+- ⚠️ **Varováním o rizikovém e-shopu** - Oficiální informace od ČOI
+- 🏛️ **Badge "Oficiální zdroj: ČOI"** - Potvrzení důvěryhodnosti dat
+- 📋 **Tlačítkem "Zobrazit podrobnosti"** - Rozbalí důvod od ČOI
+- 💬 **Důvod zařazení do seznamu** - Konkrétní odůvodnění od České obchodní inspekce
+- 🛡️ **Doporučení** - Nedůvěřovat stránce a nezadávat osobní údaje
+- 🔴 **Tlačítkem "Zavřít záložku"** - Bezpečně zavře stránku
+- ⚪ **Tlačítkem "Ignorovat"** - Pokračuje na vlastní riziko
 
-## Rozšíření databáze
+## Zdroj dat
 
-Databáze podvodných domén je uložena v `data/scam-domains.json`. Pro přidání nové domény:
+Rozšíření využívá **oficiální otevřená data** z České obchodní inspekce:
 
-```json
-{
-  "domains": [
-    "example-scam-shop.com",
-    "nová-podvodná-stránka.cz"
-  ],
-  "lastUpdated": "2025-11-18",
-  "version": "1.0.0"
-}
-```
+- **URL**: https://www.coi.gov.cz/userdata/files/dokumenty-ke-stazeni/open-data/rizikove-seznam.csv
+- **Formát**: CSV (středník nebo čárka jako oddělovač)
+- **Aktualizace**: Automaticky při každém spuštění prohlížeče
+- **Offline režim**: Data se cachují v chrome.storage pro použití bez internetu
+- **Struktura**: Doména + Důvod zařazení do seznamu
 
 ## Nahlášení podvodné stránky
 
-Pokud jste narazili na podvodnou stránku, která není v databázi:
+Pokud jste narazili na podvodnou stránku, kterou byste chtěli nahlásit:
 
-1. Klikněte na ikonu rozšíření
-2. Klikněte na "Nahlásit podvodnou stránku"
-3. Vyplňte formulář s podrobnostmi
+**Oficiální nahlášení ČOI:**
+- Web: https://www.coi.cz
+- E-podatelna: https://www.coi.cz/informace-o-uradu/kontakty/podatelna/
+- Telefonická infolinka: 296 366 360
+
+**Nahlášení problému s rozšířením:**
+- GitHub Issues: https://github.com/michaelpetrik/fair-store/issues/new
 
 ## Bezpečnost
 
-- ✅ Žádná data nejsou odesílána na externí servery
-- ✅ Rozšíření pouze kontroluje domény lokálně
-- ✅ Ochrana před XSS útoky
-- ✅ Manifest V3 (nejnovější bezpečnostní standard)
+- ✅ **Důvěryhodný zdroj**: Data pocházejí z oficiálního seznamu ČOI
+- ✅ **Žádné sledování**: Rozšíření nesbírá ani neodesílá osobní údaje
+- ✅ **Lokální kontrola**: Domény se kontrolují pouze lokálně v prohlížeči
+- ✅ **Offline cache**: Data se ukládají pro použití bez internetu
+- ✅ **Ochrana před XSS**: Všechny vstupy jsou escapovány
+- ✅ **Manifest V3**: Nejnovější bezpečnostní standard pro Chrome rozšíření
 
 ## Vývoj
 
@@ -128,4 +134,10 @@ Michael Petrik - [GitHub](https://github.com/michaelpetrik)
 
 ---
 
-**Varování**: Toto rozšíření poskytuje dodatečnou vrstvu ochrany, ale nezaručuje 100% bezpečnost. Vždy buďte obezřetní při nakupování online.
+## Disclaimer
+
+**Varování**: Toto rozšíření je **nezávislý projekt** a není oficiálním produktem České obchodní inspekce. Využívá otevřená data z ČOI, ale neposkytuje žádné záruky. Vždy buďte obezřetní při nakupování online.
+
+**Fair Store je nezávislé rozšíření** vytvořené pro zvýšení povědomí o rizikových e-shopech mezi českými spotřebiteli. Data jsou poskytována "tak jak jsou" bez záruky úplnosti nebo aktuálnosti.
+
+Pro oficiální informace a nahlašování podvodů navštivte: https://www.coi.cz

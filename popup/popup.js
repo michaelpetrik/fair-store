@@ -58,19 +58,19 @@ function updateStatus(type, title, message) {
 // Load statistics
 async function loadStats() {
   try {
-    // Get number of domains in database
-    const response = await fetch(chrome.runtime.getURL('data/scam-domains.json'));
-    const data = await response.json();
-    const domainsCount = data.domains ? data.domains.length : 0;
+    // Get number of domains from storage (loaded from ČOI CSV)
+    const result = await chrome.storage.local.get(['scamDomains', 'warningsCount']);
 
+    const domainsCount = result.scamDomains ? result.scamDomains.length : 0;
     document.getElementById('domains-count').textContent = domainsCount;
 
     // Get warnings count from storage
-    const result = await chrome.storage.local.get(['warningsCount']);
     const warningsCount = result.warningsCount || 0;
     document.getElementById('warnings-count').textContent = warningsCount;
   } catch (error) {
     console.error('Failed to load stats:', error);
+    document.getElementById('domains-count').textContent = '0';
+    document.getElementById('warnings-count').textContent = '0';
   }
 }
 

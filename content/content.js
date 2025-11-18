@@ -12,7 +12,7 @@ async function checkCurrentPage() {
     });
 
     if (response && response.isScam) {
-      showWarning(response.domain);
+      showWarning(response.domain, response.matchedDomain, response.reason);
     }
   } catch (error) {
     console.error('Failed to check domain:', error);
@@ -22,18 +22,22 @@ async function checkCurrentPage() {
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'showWarning') {
-    showWarning(message.domain);
+    showWarning(message.domain, message.matchedDomain, message.reason);
   }
 });
 
 // Create and display warning popup
-function showWarning(domain) {
+function showWarning(domain, matchedDomain, reason) {
   // Don't show warning twice
   if (warningShown) {
     return;
   }
 
   warningShown = true;
+
+  // Use provided reason or default
+  const coiReason = reason || 'Stránka je zařazena do seznamu rizikových e-shopů České obchodní inspekce (ČOI)';
+  const displayDomain = matchedDomain || domain;
 
   // Create overlay container
   const overlay = document.createElement('div');
@@ -44,25 +48,40 @@ function showWarning(domain) {
         <svg class="fair-store-warning-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <h1 class="fair-store-warning-title">⚠️ VAROVÁNÍ - PODEZŘELÁ STRÁNKA</h1>
+        <h1 class="fair-store-warning-title">⚠️ VAROVÁNÍ - RIZIKOVÝ E-SHOP</h1>
       </div>
 
       <div class="fair-store-warning-content">
         <p class="fair-store-warning-text">
-          Tato stránka (<strong>${escapeHtml(domain)}</strong>) je v naší databázi označena jako potenciálně podvodná.
+          Tato stránka (<strong>${escapeHtml(displayDomain)}</strong>) je v databázi <strong>České obchodní inspekce (ČOI)</strong> označena jako rizikový e-shop.
         </p>
 
-        <div class="fair-store-warning-reasons">
-          <h3>Důvody varování:</h3>
-          <ul>
-            <li>Stránka je evidována v databázi podvodných e-shopů</li>
-            <li>Uživatelé hlásili problémy s dodáním zboží</li>
-            <li>Možnost neoprávněného zneužití platebních údajů</li>
-          </ul>
+        <div class="fair-store-warning-source">
+          <div class="fair-store-source-badge">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Oficiální zdroj: ČOI</span>
+          </div>
+        </div>
+
+        <div class="fair-store-details-section">
+          <button id="fair-store-toggle-details" class="fair-store-details-toggle">
+            <svg class="fair-store-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 9L12 16L5 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Zobrazit podrobnosti od ČOI
+          </button>
+          <div id="fair-store-details-content" class="fair-store-details-content">
+            <div class="fair-store-coi-reason">
+              <h3>Důvod zařazení do seznamu ČOI:</h3>
+              <p>${escapeHtml(coiReason)}</p>
+            </div>
+          </div>
         </div>
 
         <p class="fair-store-warning-advice">
-          <strong>Doporučení:</strong> Důrazně nedoporučujeme na této stránce nakupovat nebo zadávat citlivé osobní údaje.
+          <strong>Doporučení:</strong> Důrazně nedoporučujeme na této stránce nakupovat nebo zadávat citlivé osobní údaje (čísla karet, hesla, osobní informace).
         </p>
       </div>
 
@@ -79,7 +98,7 @@ function showWarning(domain) {
       </div>
 
       <div class="fair-store-warning-footer">
-        <p>Rozšíření Fair Store chrání české spotřebitele před podvodnými e-shopy.</p>
+        <p>Data poskytuje Česká obchodní inspekce (ČOI) · Fair Store je nezávislé rozšíření pro ochranu spotřebitelů</p>
       </div>
     </div>
   `;
@@ -90,6 +109,8 @@ function showWarning(domain) {
   // Add event listeners
   const closeTabBtn = document.getElementById('fair-store-close-tab');
   const ignoreBtn = document.getElementById('fair-store-ignore');
+  const toggleDetailsBtn = document.getElementById('fair-store-toggle-details');
+  const detailsContent = document.getElementById('fair-store-details-content');
 
   if (closeTabBtn) {
     closeTabBtn.addEventListener('click', () => {
@@ -104,6 +125,30 @@ function showWarning(domain) {
       // Remove the warning overlay
       overlay.remove();
       warningShown = false;
+    });
+  }
+
+  if (toggleDetailsBtn && detailsContent) {
+    toggleDetailsBtn.addEventListener('click', () => {
+      const isExpanded = detailsContent.classList.contains('expanded');
+
+      if (isExpanded) {
+        detailsContent.classList.remove('expanded');
+        toggleDetailsBtn.innerHTML = `
+          <svg class="fair-store-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 9L12 16L5 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Zobrazit podrobnosti od ČOI
+        `;
+      } else {
+        detailsContent.classList.add('expanded');
+        toggleDetailsBtn.innerHTML = `
+          <svg class="fair-store-chevron up" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 15L12 8L19 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Skrýt podrobnosti
+        `;
+      }
     });
   }
 }
