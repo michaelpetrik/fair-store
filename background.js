@@ -196,6 +196,18 @@ function checkDomain(domain) {
   };
 }
 
+// Kontrola, zda je ochrana zapnuta
+async function isProtectionEnabled() {
+  try {
+    const result = await chrome.storage.session.get(['protectionEnabled']);
+    // Výchozí hodnota je true (zapnuto)
+    return result.protectionEnabled !== false;
+  } catch (error) {
+    console.error('Chyba při kontrole stavu ochrany:', error);
+    return true; // V případě chyby raději zapnuto
+  }
+}
+
 // Listen for tab updates (page navigation)
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   // Only check when the page starts loading
@@ -207,7 +219,15 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       const result = checkDomain(domain);
 
       if (result.isScam) {
-        console.log(`⚠️ Scam domain detected: ${domain} (matched: ${result.matchedDomain})`);
+        // Zkontrolovat, zda je ochrana zapnuta
+        const protectionEnabled = await isProtectionEnabled();
+
+        if (!protectionEnabled) {
+          console.log(`⚠️ Rizikový e-shop detekován: ${domain}, ale ochrana je vypnuta`);
+          return;
+        }
+
+        console.log(`⚠️ Rizikový e-shop detekován: ${domain} (shoda: ${result.matchedDomain})`);
 
         // Send message to content script to show warning
         try {
@@ -220,7 +240,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
           });
         } catch (error) {
           // Content script might not be ready yet, will check on load
-          console.log('Content script not ready, will show warning on load');
+          console.log('Content script není připraven, varování se zobrazí při načtení');
         }
       }
     }
@@ -232,14 +252,32 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'checkDomain') {
     const domain = extractDomain(message.url);
     const result = checkDomain(domain);
-    sendResponse({
-      isScam: result.isScam,
-      domain: domain,
-      matchedDomain: result.matchedDomain,
-      reason: result.reason
+
+    // Zkontrolovat stav ochrany
+    isProtectionEnabled().then(protectionEnabled => {
+      sendResponse({
+        isScam: protectionEnabled && result.isScam,
+        domain: domain,
+        matchedDomain: result.matchedDomain,
+        reason: result.reason,
+        protectionEnabled: protectionEnabled
+      });
     });
+
+    return true; // Asynchronní odpověď
   }
-  return true; // Keep message channel open for async response
+
+  if (message.action === 'setProtection') {
+    // Nastavit stav ochrany
+    chrome.storage.session.set({ protectionEnabled: message.enabled }).then(() => {
+      console.log(`Ochrana ${message.enabled ? 'zapnuta' : 'vypnuta'}`);
+      sendResponse({ success: true });
+    });
+
+    return true; // Asynchronní odpověď
+  }
+
+  return false;
 });
 
 // Initialize on startup
