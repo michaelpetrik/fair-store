@@ -106,30 +106,64 @@ function showWarning(domain, matchedDomain, reason) {
   // Inject into page
   document.documentElement.appendChild(overlay);
 
-  // Add event listeners
+  // Prevent body scrolling when overlay is shown
+  const originalOverflow = document.body.style.overflow;
+  const originalPosition = document.body.style.position;
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'relative';
+
+  // Function to remove overlay and restore page
+  function removeOverlay() {
+    overlay.remove();
+    warningShown = false;
+    // Restore body scrolling
+    document.body.style.overflow = originalOverflow;
+    document.body.style.position = originalPosition;
+  }
+
+  // Get interactive elements
   const closeTabBtn = document.getElementById('fair-store-close-tab');
   const ignoreBtn = document.getElementById('fair-store-ignore');
   const toggleDetailsBtn = document.getElementById('fair-store-toggle-details');
   const detailsContent = document.getElementById('fair-store-details-content');
 
+  // Close tab button
   if (closeTabBtn) {
-    closeTabBtn.addEventListener('click', () => {
+    closeTabBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Disable button to prevent double clicks
+      closeTabBtn.disabled = true;
+
       // Close the current tab
       chrome.runtime.sendMessage({ action: 'closeTab' });
       window.close();
     });
   }
 
+  // Ignore button
   if (ignoreBtn) {
-    ignoreBtn.addEventListener('click', () => {
-      // Remove the warning overlay
-      overlay.remove();
-      warningShown = false;
+    ignoreBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Smooth fade out before removing
+      overlay.style.opacity = '0';
+      overlay.style.transition = 'opacity 0.3s ease';
+
+      setTimeout(() => {
+        removeOverlay();
+      }, 300);
     });
   }
 
+  // Toggle details button
   if (toggleDetailsBtn && detailsContent) {
-    toggleDetailsBtn.addEventListener('click', () => {
+    toggleDetailsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
       const isExpanded = detailsContent.classList.contains('expanded');
 
       if (isExpanded) {
@@ -140,6 +174,7 @@ function showWarning(domain, matchedDomain, reason) {
           </svg>
           Zobrazit podrobnosti od ČOI
         `;
+        toggleDetailsBtn.setAttribute('aria-expanded', 'false');
       } else {
         detailsContent.classList.add('expanded');
         toggleDetailsBtn.innerHTML = `
@@ -148,9 +183,66 @@ function showWarning(domain, matchedDomain, reason) {
           </svg>
           Skrýt podrobnosti
         `;
+        toggleDetailsBtn.setAttribute('aria-expanded', 'true');
       }
     });
+
+    // Initialize aria attribute
+    toggleDetailsBtn.setAttribute('aria-expanded', 'false');
   }
+
+  // Keyboard support
+  document.addEventListener('keydown', function handleKeydown(e) {
+    if (!warningShown) {
+      document.removeEventListener('keydown', handleKeydown);
+      return;
+    }
+
+    // Close on Escape key
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      e.preventDefault();
+      if (ignoreBtn) {
+        ignoreBtn.click();
+      }
+    }
+
+    // Focus trap - keep focus within overlay
+    if (e.key === 'Tab') {
+      const focusableElements = overlay.querySelectorAll(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey && document.activeElement === firstElement) {
+        // Shift+Tab on first element: go to last
+        e.preventDefault();
+        lastElement.focus();
+      } else if (!e.shiftKey && document.activeElement === lastElement) {
+        // Tab on last element: go to first
+        e.preventDefault();
+        firstElement.focus();
+      }
+    }
+  });
+
+  // Focus the primary button immediately for accessibility
+  if (closeTabBtn) {
+    setTimeout(() => {
+      closeTabBtn.focus();
+    }, 100);
+  }
+
+  // Prevent clicks on overlay background from closing (by not adding listener)
+  // But allow clicks on container to propagate
+  overlay.addEventListener('click', (e) => {
+    // Only close if clicking directly on overlay background, not on container
+    if (e.target === overlay) {
+      // Optional: uncomment to allow closing by clicking background
+      // ignoreBtn?.click();
+    }
+  });
 }
 
 // Escape HTML to prevent XSS
