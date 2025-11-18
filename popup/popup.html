@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fair Store</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="popup-header">
+      <h1>🛡️ Fair Store</h1>
+      <p class="subtitle">Ochrana spotřebitelů</p>
+    </div>
+
+    <div class="popup-content">
+      <div class="status-section">
+        <div class="status-indicator" id="status-indicator">
+          <div class="status-icon">✓</div>
+          <div class="status-text">
+            <strong id="status-title">Stránka je bezpečná</strong>
+            <p id="status-message">Tato stránka není v naší databázi podvodných e-shopů.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>O rozšíření</h3>
+        <p>Fair Store chrání české spotřebitele před podvodnými e-commerce stránkami. Rozšíření kontroluje navštívené domény proti databázi známých podvodných e-shopů.</p>
+      </div>
+
+      <div class="stats-section">
+        <div class="stat">
+          <div class="stat-value" id="domains-count">0</div>
+          <div class="stat-label">Sledovaných domén</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="warnings-count">0</div>
+          <div class="stat-label">Varování zobrazeno</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="popup-footer">
+      <button id="report-btn" class="btn btn-primary">Nahlásit podvodnou stránku</button>
+      <p class="version">Verze 1.0.0</p>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
