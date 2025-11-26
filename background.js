@@ -93,20 +93,29 @@ function parseCSV(csvText) {
 function cleanDomain(domain) {
   if (!domain) return '';
 
-  // Remove protocol
-  domain = domain.replace(/^https?:\/\//, '');
+  try {
+    // Try to parse as URL
+    // If it doesn't have protocol, add one to make URL parser happy
+    const urlStr = domain.match(/^https?:\/\//) ? domain : 'http://' + domain;
+    const url = new URL(urlStr);
+    return url.hostname.toLowerCase();
+  } catch (e) {
+    // Fallback to manual cleaning
+    // Remove protocol
+    domain = domain.replace(/^https?:\/\//, '');
 
-  // Remove path and query string
-  domain = domain.split('/')[0];
-  domain = domain.split('?')[0];
+    // Remove path and query string
+    domain = domain.split('/')[0];
+    domain = domain.split('?')[0];
 
-  // Remove port
-  domain = domain.split(':')[0];
+    // Remove port
+    domain = domain.split(':')[0];
 
-  // Convert to lowercase
-  domain = domain.toLowerCase().trim();
+    // Convert to lowercase
+    domain = domain.toLowerCase().trim();
 
-  return domain;
+    return domain;
+  }
 }
 
 // Load scam domains from ČOI CSV
@@ -169,6 +178,7 @@ function extractDomain(url) {
 // Check if domain is in scam list
 // Returns { isScam: boolean, reason: string, matchedDomain: string }
 function checkDomain(domain) {
+  domain = domain.toLowerCase();
   // Check for exact match
   if (scamDomains.has(domain)) {
     return {

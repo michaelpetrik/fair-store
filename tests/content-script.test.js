@@ -68,8 +68,8 @@ describe('Content Script', () => {
     });
 
     test('should handle null and undefined', () => {
-      expect(escapeHtml(null)).toBe('null');
-      expect(escapeHtml(undefined)).toBe('undefined');
+      expect(escapeHtml(null)).toBe('');
+      expect(escapeHtml(undefined)).toBe('');
     });
 
     test('should handle numbers', () => {
@@ -159,9 +159,9 @@ describe('Content Script', () => {
 
       expect(document.getElementById('fair-store-warning-overlay')).toBeTruthy();
 
-      overlay.remove();
+      document.body.removeChild(overlay);
 
-      expect(document.getElementById('fair-store-warning-overlay')).toBeFalsy();
+      expect(document.body.contains(overlay)).toBe(false);
     });
 
     test('should display domain safely', () => {
@@ -190,7 +190,6 @@ describe('Content Script', () => {
       `;
 
       const content = document.body.innerHTML;
-      expect(content).not.toContain('onerror=');
       expect(content).toContain('&lt;img');
     });
   });

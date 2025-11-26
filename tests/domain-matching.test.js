@@ -15,6 +15,7 @@ function extractDomain(url) {
 }
 
 function checkDomain(domain, scamDomains) {
+  domain = domain.toLowerCase();
   // Check for exact match
   if (scamDomains.has(domain)) {
     return {
@@ -90,7 +91,7 @@ describe('Domain Extraction', () => {
     test('should handle invalid URLs', () => {
       expect(extractDomain('not-a-url')).toBe('');
       expect(extractDomain('')).toBe('');
-      expect(extractDomain('javascript:void(0)')).toBeTruthy(); // May or may not work
+      expect(extractDomain('javascript:void(0)')).toBe(''); // Should be empty
     });
 
     test('should handle URLs with authentication', () => {

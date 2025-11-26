@@ -66,13 +66,18 @@ function parseCSV(csvText) {
 function cleanDomain(domain) {
   if (!domain) return '';
 
-  domain = domain.replace(/^https?:\/\//, '');
-  domain = domain.split('/')[0];
-  domain = domain.split('?')[0];
-  domain = domain.split(':')[0];
-  domain = domain.toLowerCase().trim();
-
-  return domain;
+  try {
+    const urlStr = domain.match(/^https?:\/\//) ? domain : 'http://' + domain;
+    const url = new URL(urlStr);
+    return url.hostname.toLowerCase();
+  } catch (e) {
+    domain = domain.replace(/^https?:\/\//, '');
+    domain = domain.split('/')[0];
+    domain = domain.split('?')[0];
+    domain = domain.split(':')[0];
+    domain = domain.toLowerCase().trim();
+    return domain;
+  }
 }
 
 describe('CSV Parser', () => {
@@ -276,7 +281,7 @@ Test.COM;Reason 2`;
     });
 
     test('should handle URLs with authentication', () => {
-      expect(cleanDomain('https://user:pass@example.com/path')).toBe('user:pass@example.com');
+      expect(cleanDomain('https://user:pass@example.com/path')).toBe('example.com');
     });
 
     test('should preserve subdomains', () => {
