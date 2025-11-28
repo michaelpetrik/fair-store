@@ -10,7 +10,7 @@ function Popup() {
   );
 }
 
-render(<Popup />, document.getElementById('app')!);
+render(<Popup />, document.getElementById('root')!);
 
 
 
