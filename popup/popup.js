@@ -61,27 +61,17 @@ function updateStatus(type, title, message) {
 // Načtení statistik
 async function loadStats() {
   try {
-    const result = await chrome.storage.local.get(['scamDomains', 'warningsCount']);
+    const result = await chrome.storage.local.get(['scamDomains']);
     const domainsCount = result.scamDomains ? result.scamDomains.length : 0;
     const domainsCountEl = document.getElementById('domains-count');
     if (domainsCountEl) {
       domainsCountEl.textContent = domainsCount;
-    }
-
-    const warningsCount = result.warningsCount || 0;
-    const warningsCountEl = document.getElementById('warnings-count');
-    if (warningsCountEl) {
-      warningsCountEl.textContent = warningsCount;
     }
   } catch (error) {
     console.error('Chyba při načítání statistik:', error);
     const domainsCountEl = document.getElementById('domains-count');
     if (domainsCountEl) {
       domainsCountEl.textContent = '0';
-    }
-    const warningsCountEl = document.getElementById('warnings-count');
-    if (warningsCountEl) {
-      warningsCountEl.textContent = '0';
     }
   }
 }
