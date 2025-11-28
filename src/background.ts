@@ -30,34 +30,9 @@ export function parseCSV(csvText: string): Map<string, string> {
 
         // Try to detect delimiter (semicolon or comma)
         const delimiter = lines[0].includes(';') ? ';' : ',';
-
-        // Parse header
-        const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
-        console.log('CSV headers:', headers);
-
         // Find domain and reason column indices
-        let domainIndex = -1;
-        let reasonIndex = -1;
-
-        // Try different possible column names
-        const domainNames = ['url', 'domain', 'doména', 'adresa', 'www'];
-        const reasonNames = ['reason', 'důvod', 'duvod', 'popis', 'description'];
-
-        headers.forEach((header, index) => {
-            const lowerHeader = header.toLowerCase();
-            if (domainNames.some(name => lowerHeader.includes(name))) {
-                domainIndex = index;
-            }
-            if (reasonNames.some(name => lowerHeader.includes(name))) {
-                reasonIndex = index;
-            }
-        });
-
-        // If not found, assume first column is domain, second is reason
-        if (domainIndex === -1) domainIndex = 0;
-        if (reasonIndex === -1 && headers.length > 1) reasonIndex = 1;
-
-        console.log(`Using column ${domainIndex} for domain, column ${reasonIndex} for reason`);
+        let domainIndex = 0;
+        let reasonIndex = 1;
 
         // Parse data rows
         for (let i = 1; i < lines.length; i++) {
@@ -76,12 +51,13 @@ export function parseCSV(csvText: string): Map<string, string> {
                 domain = cleanDomain(domain);
 
                 if (domain) {
-                    domains.set(domain, reason);
+                    domains.set(domain, reason)
                 }
             }
         }
 
-        console.log(`Parsed ${domains.size} domains from CSV`);
+        console.log(`✅ Loaded ${domains.size} domains from ČOI`);
+        console.log(`Last update: ${lastUpdate}`);
     } catch (error) {
         console.error('Error parsing CSV:', error);
     }
