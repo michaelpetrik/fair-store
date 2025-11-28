@@ -2,6 +2,7 @@ import './warning.css';
 import { BannerRenderer } from './bannerRenderer';
 import { DomainBlacklist } from './domainBlacklist';
 import { ScamBannerController } from './controller';
+import { OverlayRenderer } from './overlayRenderer'; // Import OverlayRenderer
 
 chrome.runtime.sendMessage({ action: 'getBlacklist' }, (blacklist) => {
   if (chrome.runtime.lastError) {
@@ -11,12 +12,13 @@ chrome.runtime.sendMessage({ action: 'getBlacklist' }, (blacklist) => {
 
   const bannerRenderer = new BannerRenderer(document, {
     id: 'fair-store-scam-banner',
-    text: 'SCAM STORE',
+    text: 'Rizikový e-shop!',
     styles: {
-      position: 'absolute',
+      position: 'fixed',
       top: '0',
       left: '0',
       right: '0',
+      width: '100%',
       padding: '12px 16px',
       'background-color': '#d32f2f',
       color: '#ffffff',
@@ -30,11 +32,21 @@ chrome.runtime.sendMessage({ action: 'getBlacklist' }, (blacklist) => {
     },
   });
 
+  // Instantiate OverlayRenderer
+  const overlayRenderer = new OverlayRenderer(document, {
+    id: 'fair-store-warning-overlay',
+    styles: {
+      // CSS from warning.css will be applied to #fair-store-warning-overlay
+    },
+  });
+
+
   const controller = new ScamBannerController(
     document,
     window.location,
     new DomainBlacklist(blacklist),
     bannerRenderer,
+    overlayRenderer, // Pass overlayRenderer
   );
 
   controller.init();
