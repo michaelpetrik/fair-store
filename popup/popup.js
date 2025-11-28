@@ -113,7 +113,7 @@ function setupEventListeners() {
   const rateBtn = document.getElementById('rate-btn');
   if (rateBtn) {
     rateBtn.addEventListener('click', () => {
-      chrome.tabs.create({ url: 'https://chrome.google.com/webstore/detail/YOUR_EXTENSION_ID/reviews' });
+      chrome.tabs.create({ url: 'https://chrome.google.com/webstore/detail/gooohenidgfjghgghdhigagajngphkhc/reviews' });
     });
   }
 
