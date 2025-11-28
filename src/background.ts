@@ -154,6 +154,11 @@ async function isProtectionEnabled(): Promise<boolean> {
 // Listen for tab updates
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     if (changeInfo.status === 'loading' && tab.url) {
+        // Wait for domains to be loaded first
+        if (domainsLoaded) {
+            await domainsLoaded;
+        }
+
         const domain = extractDomain(tab.url);
         if (domain && !tab.url.startsWith('chrome://') && !tab.url.startsWith('chrome-extension://')) {
             const result = checkDomain(domain);
@@ -238,6 +243,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // Helper to update all tabs when global protection is toggled
 export async function updateAllTabsProtection(enabled: boolean) {
+    // Wait for domains to be loaded first
+    if (domainsLoaded) {
+        await domainsLoaded;
+    }
+
     const tabs = await chrome.tabs.query({});
     for (const tab of tabs) {
         if (tab.id && tab.url) {
