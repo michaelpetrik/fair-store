@@ -8,13 +8,15 @@ const COI_CSV_URL = 'https://www.coi.gov.cz/userdata/files/dokumenty-ke-stazeni/
 // Format: Map<domain, reason>
 export let scamDomains = new Map<string, string>();
 let lastUpdate: string | null = null;
+let domainsLoaded: Promise<void> | null = null;
 
 // Load scam domains database on installation
 chrome.runtime.onInstalled.addListener(async () => {
     console.log('Fair Store extension installed');
     // Set protection to be enabled by default on install
     await chrome.storage.session.set({ protectionEnabled: true });
-    await loadScamDomains();
+    domainsLoaded = loadScamDomains();
+    await domainsLoaded;
 });
 
 // Parse CSV file from ČOI
@@ -174,45 +176,60 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 });
 
 // Listen for messages from popup or content scripts
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'getBlacklist') {
-        // Content script requests the blacklist
-        const blacklistArray = Array.from(scamDomains.keys());
-        const protectionEnabled = await isProtectionEnabled();
-        sendResponse({
-            blacklist: blacklistArray,
-            protectionEnabled: protectionEnabled
-        });
+        // Wait for domains to be loaded before responding
+        (async () => {
+            if (domainsLoaded) {
+                await domainsLoaded;
+            }
+            const blacklistArray = Array.from(scamDomains.keys());
+            const protectionEnabled = await isProtectionEnabled();
+            sendResponse({
+                blacklist: blacklistArray,
+                protectionEnabled: protectionEnabled
+            });
+        })();
         return true;
     }
 
     if (message.action === 'checkDomain') {
-        const domain = extractDomain(message.url);
-        const result = checkDomain(domain);
-        const protectionEnabled = await isProtectionEnabled();
-        sendResponse({
-            isScam: result.isScam,
-            domain: domain,
-            matchedDomain: result.matchedDomain,
-            reason: result.reason,
-            protectionEnabled: protectionEnabled
-        });
+        // Wait for domains to be loaded before responding
+        (async () => {
+            if (domainsLoaded) {
+                await domainsLoaded;
+            }
+            const domain = extractDomain(message.url);
+            const result = checkDomain(domain);
+            const protectionEnabled = await isProtectionEnabled();
+            sendResponse({
+                isScam: result.isScam,
+                domain: domain,
+                matchedDomain: result.matchedDomain,
+                reason: result.reason,
+                protectionEnabled: protectionEnabled
+            });
+        })();
         return true;
     }
 
     if (message.action === 'setProtection') {
-        await chrome.storage.session.set({ protectionEnabled: message.enabled });
-        await updateAllTabsProtection(message.enabled);
-        sendResponse({ success: true });
-        console.log(`Ochrana ${message.enabled ? 'zapnuta' : 'vypnuta'}`);
+        (async () => {
+            await chrome.storage.session.set({ protectionEnabled: message.enabled });
+            await updateAllTabsProtection(message.enabled);
+            sendResponse({ success: true });
+            console.log(`Ochrana ${message.enabled ? 'zapnuta' : 'vypnuta'}`);
+        })();
         return true;
     }
 
     if (message.action === 'closeTab') {
-        if (sender.tab && sender.tab.id) {
-            await chrome.tabs.remove(sender.tab.id);
-            sendResponse({ success: true });
-        }
+        (async () => {
+            if (sender.tab && sender.tab.id) {
+                await chrome.tabs.remove(sender.tab.id);
+                sendResponse({ success: true });
+            }
+        })();
         return true;
     }
 
@@ -258,5 +275,5 @@ if (typeof module === 'undefined') {
             chrome.storage.session.set({ protectionEnabled: true });
         }
     });
-    loadScamDomains();
+    domainsLoaded = loadScamDomains();
 }

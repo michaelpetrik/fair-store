@@ -53,12 +53,12 @@ export class OverlayRenderer {
             <path d="M12 9V11M12 15H12.01M5.07183 19H18.9282C20.4678 19 21.4301 17.3333 20.6603 16L13.7321 4C12.9623 2.66667 11.0378 2.66667 10.268 4L3.33978 16C2.56998 17.3333 3.53223 19 5.07183 19Z" 
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <h1 class="fair-store-warning-title">⚠️ Varování: Rizikový e-shop!</h1>
+          <h1 class="fair-store-warning-title">Varování: Rizikový e-shop!</h1>
         </div>
 
         <div class="fair-store-warning-content">
           <p class="fair-store-warning-text">
-            Navštívili jste potenciálně <strong>podvodný e-shop</strong>: <strong>${this.escapeHtml(domain)}</strong>
+            Navštívili jste potenciálně podvodný e-shop: <strong>${this.escapeHtml(domain)}</strong>
           </p>
           
           <div class="fair-store-warning-source">
