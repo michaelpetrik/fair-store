@@ -3,82 +3,32 @@
  * Tests for parsing ČOI CSV data with various formats and edge cases
  */
 
-// Mock functions from background.js
-function parseCSV(csvText) {
-  const domains = new Map();
-
-  try {
-    const lines = csvText.trim().split('\n');
-
-    if (lines.length === 0) {
-      console.warn('CSV file is empty');
-      return domains;
+// Setup global mocks before requiring background.js
+global.chrome = {
+  runtime: {
+    onInstalled: { addListener: jest.fn() },
+    onMessage: { addListener: jest.fn() }
+  },
+  tabs: {
+    onUpdated: { addListener: jest.fn() },
+    sendMessage: jest.fn()
+  },
+  storage: {
+    local: {
+      get: jest.fn(),
+      set: jest.fn()
+    },
+    session: {
+      get: jest.fn(),
+      set: jest.fn()
     }
-
-    const delimiter = lines[0].includes(';') ? ';' : ',';
-    const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
-
-    let domainIndex = -1;
-    let reasonIndex = -1;
-
-    const domainNames = ['url', 'domain', 'doména', 'adresa', 'www'];
-    const reasonNames = ['reason', 'důvod', 'duvod', 'popis', 'description'];
-
-    headers.forEach((header, index) => {
-      const lowerHeader = header.toLowerCase();
-      if (domainNames.some(name => lowerHeader.includes(name))) {
-        domainIndex = index;
-      }
-      if (reasonNames.some(name => lowerHeader.includes(name))) {
-        reasonIndex = index;
-      }
-    });
-
-    if (domainIndex === -1) domainIndex = 0;
-    if (reasonIndex === -1 && headers.length > 1) reasonIndex = 1;
-
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-
-      const columns = line.split(delimiter).map(c => c.trim().replace(/^"|"$/g, ''));
-
-      if (columns.length > domainIndex) {
-        let domain = columns[domainIndex];
-        const reason = reasonIndex >= 0 && columns.length > reasonIndex
-          ? columns[reasonIndex]
-          : 'Zařazeno do seznamu rizikových e-shopů ČOI';
-
-        domain = cleanDomain(domain);
-
-        if (domain) {
-          domains.set(domain, reason);
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error parsing CSV:', error);
   }
+};
 
-  return domains;
-}
+global.fetch = jest.fn();
 
-function cleanDomain(domain) {
-  if (!domain) return '';
-
-  try {
-    const urlStr = domain.match(/^https?:\/\//) ? domain : 'http://' + domain;
-    const url = new URL(urlStr);
-    return url.hostname.toLowerCase();
-  } catch (e) {
-    domain = domain.replace(/^https?:\/\//, '');
-    domain = domain.split('/')[0];
-    domain = domain.split('?')[0];
-    domain = domain.split(':')[0];
-    domain = domain.toLowerCase().trim();
-    return domain;
-  }
-}
+// Import actual functions
+const { parseCSV, cleanDomain } = require('../background.js');
 
 describe('CSV Parser', () => {
   describe('parseCSV', () => {

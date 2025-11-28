@@ -23,6 +23,7 @@ export class DomainBlacklist {
   }
 
   private static normalizeHost(value: string): string {
+    console.log("normalizeHost", value);
     return value.trim().toLowerCase();
   }
 }
