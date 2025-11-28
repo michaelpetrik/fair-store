@@ -1,7 +1,7 @@
 import { render } from 'preact';
 import './popup.css';
 
-function Popup() {
+export function Popup() {
   return (
     <div className="container">
       <h1>Fair Store</h1>
