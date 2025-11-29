@@ -1,30 +1,129 @@
 body {
-  width: 300px;
+  width: 360px;
+  min-height: 200px;
   padding: 0;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .container {
-  padding: 20px;
+  padding: 24px;
+  background: white;
 }
 
 h1 {
-  font-size: 20px;
+  font-size: 24px;
   margin: 0 0 16px 0;
-  color: #333;
+  color: #1a202c;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 18px;
+  margin: 0 0 12px 0;
+  font-weight: 600;
 }
 
 p {
   margin: 0;
-  color: #666;
+  color: #4a5568;
+  line-height: 1.6;
 }
 
+.domain-info {
+  padding: 12px 16px;
+  background: #f7fafc;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #2d3748;
+  word-break: break-all;
+}
 
+.domain-info strong {
+  color: #1a202c;
+}
 
+/* Safe Status */
+.status-safe {
+  padding: 16px;
+  background: linear-gradient(135deg, #67e8a5 0%, #4ade80 100%);
+  border-radius: 12px;
+  color: #064e3b;
+  box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+}
 
+.status-safe h2 {
+  color: #064e3b;
+  margin-bottom: 8px;
+}
 
+.status-safe p {
+  color: #065f46;
+  font-size: 14px;
+}
 
+/* Whitelisted Status (Warning) */
+.status-whitelisted {
+  padding: 16px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 12px;
+  color: #78350f;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
 
+.status-whitelisted h2 {
+  color: #78350f;
+  margin-bottom: 12px;
+}
 
+.status-whitelisted p {
+  color: #92400e;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
 
+.status-whitelisted .reason {
+  background: rgba(255, 255, 255, 0.4);
+  padding: 12px;
+  border-radius: 8px;
+  margin: 12px 0;
+  font-size: 13px;
+  color: #78350f;
+}
+
+.status-whitelisted .warning-text {
+  margin-top: 12px;
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* Danger Status */
+.status-danger {
+  padding: 16px;
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+  border-radius: 12px;
+  color: #7f1d1d;
+  box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);
+}
+
+.status-danger h2 {
+  color: #7f1d1d;
+  margin-bottom: 8px;
+}
+
+.status-danger p {
+  color: #991b1b;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.status-danger .reason {
+  background: rgba(255, 255, 255, 0.4);
+  padding: 12px;
+  border-radius: 8px;
+  margin: 12px 0;
+  font-size: 13px;
+  color: #7f1d1d;
+}
