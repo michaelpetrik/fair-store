@@ -34,15 +34,32 @@ npm-debug.log*
 *.temp
 .cache/
 
-# Chrome extension private key
+# Chrome extension private key & packages
 *.pem
+*.crx
+*.zip
+*.tar.gz
 
-# Environment
+# Environment & Secrets
 .env
-.env.local
+.env.*
+!.env.example
+*.secret
+*.secrets
+secrets/
+credentials/
+.credentials
+
+# API Keys & Tokens (additional patterns)
+*_key
+*_secret
+*_token
+*.key.json
+config.local.*
 
 # Claude Flow generated files
 .claude/settings.local.json
+.claude/checkpoints/
 .mcp.json
 claude-flow.config.json
 .swarm/
@@ -67,3 +84,30 @@ coordination/orchestration/*
 claude-flow
 # Removed Windows wrapper files per user request
 hive-mind-prompt-*.txt
+
+# Chrome Web Store & Publishing
+*.pem
+web-store-credentials.json
+oauth-credentials.json
+publish-config.json
+
+# Backup files
+*.bak
+*.backup
+*~.nib
+*.orig
+
+# Certificate & Signing
+*.cert
+*.crt
+*.der
+*.p7b
+*.p7c
+*.p12
+*.pfx
+*.keystore
+
+# Local configuration
+.local/
+local.config.*
+config.local.*
