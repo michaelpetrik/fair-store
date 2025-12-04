@@ -1,23 +1,54 @@
-// Background service worker for Fair Store extension
-// Monitors navigation and checks domains against ČOI database
+/**
+ * Background service worker for Fair Store extension
+ * Monitors navigation and checks domains against ČOI (Czech Trade Inspection) database
+ *
+ * @module background
+ * @author Michael Petrik
+ * @license MIT
+ */
 
-// URL of ČOI risk list
+/** URL of ČOI risk list CSV file */
 const COI_CSV_URL = 'https://www.coi.gov.cz/userdata/files/dokumenty-ke-stazeni/open-data/rizikove-seznam.csv';
 
-// Store domains with their reasons
+/**
+ * Map of scam domains with their reasons
+ * Key: domain name (e.g., "scam-shop.cz")
+ * Value: reason from ČOI (e.g., "Zařazeno do seznamu rizikových e-shopů")
+ */
 export let scamDomains = new Map<string, string>();
-// Store allowed domains for the current session (user clicked "Continue")
+
+/**
+ * Set of domains allowed by user for the current session
+ * User clicked "Continue anyway" on the warning page
+ */
 export let allowedDomains = new Set<string>();
 
+/** ISO timestamp of last successful data update */
 let lastUpdate: string | null = null;
 
-// Initialize on install
+/** Global protection state - can be toggled by user */
+let protectionEnabled = true;
+
+/**
+ * Initialize extension on install
+ * Loads scam domains from ČOI
+ */
 chrome.runtime.onInstalled.addListener(async () => {
     console.log('Fair Store extension installed');
     await loadScamDomains();
 });
 
-// Parse CSV file from ČOI
+/**
+ * Parse CSV file from ČOI and extract scam domains
+ *
+ * @param csvText - Raw CSV text content (Windows-1250 encoded)
+ * @returns Map of domain -> reason pairs
+ *
+ * @example
+ * const csvText = "scam-shop.cz;Podvodný e-shop\nfake.com;Neexistující zboží";
+ * const domains = parseCSV(csvText);
+ * // domains.get("scam-shop.cz") === "Podvodný e-shop"
+ */
 export function parseCSV(csvText: string): Map<string, string> {
     const domains = new Map<string, string>();
     try {
@@ -43,7 +74,16 @@ export function parseCSV(csvText: string): Map<string, string> {
     return domains;
 }
 
-// Clean domain string
+/**
+ * Clean and normalize domain string
+ *
+ * @param domain - Raw domain string (may include protocol, path, etc.)
+ * @returns Cleaned domain name in lowercase (e.g., "example.com")
+ *
+ * @example
+ * cleanDomain("https://www.example.com/path") === "www.example.com"
+ * cleanDomain("example.com:8080") === "example.com"
+ */
 export function cleanDomain(domain: string): string {
     if (!domain) return '';
     try {
@@ -55,8 +95,18 @@ export function cleanDomain(domain: string): string {
     }
 }
 
-// Load scam domains
-export async function loadScamDomains() {
+/**
+ * Load scam domains from ČOI web source with fallback mechanisms
+ *
+ * Priority:
+ * 1. Fetch from ČOI website (https://www.coi.gov.cz)
+ * 2. Load from cached storage
+ * 3. Load from local CSV file
+ *
+ * @returns Promise that resolves when domains are loaded
+ * @throws Never - All errors are caught and logged
+ */
+export async function loadScamDomains(): Promise<void> {
     try {
         console.log('Fetching ČOI risk list from web...');
         const response = await fetch(COI_CSV_URL);
@@ -119,7 +169,15 @@ export async function loadScamDomains() {
     }
 }
 
-// Extract domain from URL
+/**
+ * Extract domain from full URL
+ *
+ * @param url - Full URL string
+ * @returns Domain name in lowercase, or empty string if invalid
+ *
+ * @example
+ * extractDomain("https://www.example.com/page?q=1") === "www.example.com"
+ */
 export function extractDomain(url: string): string {
     try {
         return new URL(url).hostname.toLowerCase();
@@ -128,32 +186,61 @@ export function extractDomain(url: string): string {
     }
 }
 
-// Check if domain is in scam list
-export function checkDomain(domain: string): { isScam: boolean, reason: string | null, matchedDomain: string | null } {
+/**
+ * Result of domain safety check
+ */
+export interface DomainCheckResult {
+    /** Whether the domain is identified as a scam */
+    isScam: boolean;
+    /** Reason from ČOI for flagging this domain (if scam) */
+    reason: string | null;
+    /** The matched scam domain pattern (may differ from checked domain for subdomains) */
+    matchedDomain: string | null;
+}
+
+/**
+ * Check if domain is in scam list
+ *
+ * @param domain - Domain to check (will be normalized to lowercase)
+ * @returns Check result with scam status, reason, and matched pattern
+ *
+ * @example
+ * checkDomain("safe-shop.cz") === { isScam: false, reason: null, matchedDomain: null }
+ * checkDomain("scam.com") === { isScam: true, reason: "Podvodný e-shop", matchedDomain: "scam.com" }
+ */
+export function checkDomain(domain: string): DomainCheckResult {
     domain = domain.toLowerCase();
+
+    // User explicitly allowed this domain in current session
     if (allowedDomains.has(domain)) {
         return { isScam: false, reason: null, matchedDomain: null };
     }
 
+    // Direct match in scam list
     if (scamDomains.has(domain)) {
         return { isScam: true, reason: scamDomains.get(domain) || null, matchedDomain: domain };
     }
+
+    // Check if it's a subdomain of a scam domain
     for (const [scamDomain, reason] of scamDomains.entries()) {
         if (domain.endsWith('.' + scamDomain)) {
-            // Check if allowed (e.g. sub.scam.com might be allowed if we allowed scam.com? No, usually we allow exact domain)
-            // But if user allowed "scam.com", we should probably allow "www.scam.com".
-            // For now, simple exact match on allowedDomains.
             return { isScam: true, reason: reason, matchedDomain: scamDomain };
         }
     }
+
     return { isScam: false, reason: null, matchedDomain: null };
 }
 
-// Listen for tab updates to redirect risky sites
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+/**
+ * Listen for tab updates to redirect risky sites
+ *
+ * When a tab starts loading, check if the domain is in the scam list.
+ * If yes, redirect to warning page before the dangerous page loads.
+ */
+chrome.tabs.onUpdated.addListener((tabId: number, changeInfo: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) => {
     if (changeInfo.status === 'loading' && tab.url) {
         const url = tab.url;
-        // Skip internal pages
+        // Skip internal pages (chrome://, chrome-extension://)
         if (url.startsWith('chrome://') || url.startsWith('chrome-extension://')) {
             return;
         }
@@ -170,11 +257,55 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     }
 });
 
-// Store global protection state
-let protectionEnabled = true;
+/**
+ * Message types for communication between extension components
+ */
+interface ExtensionMessage {
+    action: 'allowDomain' | 'getBlacklist' | 'checkDomain' | 'setProtection';
+    domain?: string;
+    url?: string;
+    enabled?: boolean;
+}
 
-// Handle messages
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+interface AllowDomainResponse {
+    success: boolean;
+}
+
+interface GetBlacklistResponse {
+    blacklist: string[];
+    protectionEnabled: boolean;
+}
+
+interface CheckDomainResponse {
+    isScam: boolean;
+    isWhitelisted: boolean;
+    protectionEnabled: boolean;
+    domain: string;
+    reason?: string | null;
+    matchedDomain?: string | null;
+}
+
+interface SetProtectionResponse {
+    success: boolean;
+    protectionEnabled: boolean;
+}
+
+type MessageResponse = AllowDomainResponse | GetBlacklistResponse | CheckDomainResponse | SetProtectionResponse;
+
+/**
+ * Handle messages from popup and content scripts
+ *
+ * Supported actions:
+ * - allowDomain: User clicked "Continue anyway" - add domain to allowed list
+ * - getBlacklist: Get list of all scam domains for display in popup
+ * - checkDomain: Check if current tab's domain is in scam list
+ * - setProtection: Enable/disable global protection
+ */
+chrome.runtime.onMessage.addListener((
+    message: ExtensionMessage,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: (response: MessageResponse) => void
+): boolean => {
     if (message.action === 'allowDomain') {
         const domain = message.domain;
         if (domain) {
@@ -234,4 +365,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         })();
         return true;
     }
+
+    return false;
 });

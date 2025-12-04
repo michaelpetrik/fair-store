@@ -124,6 +124,17 @@ Pro úpravy a vývoj:
 3. Klikněte na ikonu "refresh" u rozšíření
 4. Změny jsou okamžitě aktivní
 
+## Dokumentace
+
+Podrobná dokumentace je k dispozici v adresáři `/docs`:
+
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Architektura systému a datové toky
+- **[API.md](docs/API.md)** - API pro komunikaci mezi komponenty
+- **[PERMISSIONS.md](docs/PERMISSIONS.md)** - Vysvětlení oprávnění a ochrany soukromí
+- **[DEVELOPMENT.md](docs/DEVELOPMENT.md)** - Průvodce vývojem
+- **[TESTING.md](docs/TESTING.md)** - Testování a quality assurance
+- **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Nasazení do Chrome Web Store
+
 ## Licence
 
 MIT License - viz LICENSE soubor

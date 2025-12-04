@@ -71,6 +71,11 @@ body {
   background: #fef2f2;
 }
 
+.status-indicator.whitelisted {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
 .status-icon {
   width: 36px;
   height: 36px;
@@ -86,6 +91,10 @@ body {
 
 .status-indicator.warning .status-icon {
   background: #ef4444;
+}
+
+.status-indicator.whitelisted .status-icon {
+  background: #f59e0b;
 }
 
 .status-text {
