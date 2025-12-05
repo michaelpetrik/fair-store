@@ -1,0 +1,37 @@
+{
+    "packageManager": "npm",
+    "reporters": [
+        "html",
+        "clear-text",
+        "progress"
+    ],
+    "testRunner": "vitest",
+    "vitest": {
+        "configFile": "vitest.config.ts"
+    },
+    "checkers": [
+        "typescript"
+    ],
+    "tsconfigFile": "tsconfig.json",
+    "mutate": [
+        "src/**/*.ts",
+        "!src/**/*.d.ts",
+        "!src/**/*.test.ts",
+        "!src/pages/blocked.css"
+    ],
+    "ignorePatterns": [
+        "node_modules",
+        "dist",
+        "coverage",
+        ".git"
+    ],
+    "thresholds": {
+        "high": 80,
+        "low": 60,
+        "break": 50
+    },
+    "concurrency": 4,
+    "timeoutMS": 60000,
+    "coverageAnalysis": "perTest",
+    "disableTypeChecks": false
+}

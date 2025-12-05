@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Fair Store - Ochrana před podvodnými e-shopy",
-  "version": "1.1.0",
+  "version": "0.0.1",
   "description": "Chrání české spotřebitele pomocí dat České obchodní inspekce (ČOI)",
   "icons": {
     "16": "icons/icon16.png",
@@ -10,23 +10,15 @@
   },
   "permissions": [
     "storage",
-    "activeTab",
     "tabs"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "https://www.coi.gov.cz/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background.js",
+    "type": "module"
   },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content/content.js"],
-      "css": ["content/warning.css"],
-      "run_at": "document_start"
-    }
-  ],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
@@ -34,5 +26,20 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "popup/popup.js",
+        "popup/popup.css",
+        "src/pages/blocked.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; worker-src 'self'"
   }
 }
