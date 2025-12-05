@@ -1,0 +1,113 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Test Coverage
+coverage/
+.nyc_output/
+*.lcov
+
+# Jest
+.jest-cache/
+
+# Build output
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Chrome extension private key & packages
+*.pem
+*.crx
+*.zip
+*.tar.gz
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+*.secret
+*.secrets
+secrets/
+credentials/
+.credentials
+
+# API Keys & Tokens (additional patterns)
+*_key
+*_secret
+*_token
+*.key.json
+config.local.*
+
+# Claude Flow generated files
+.claude/settings.local.json
+.claude/checkpoints/
+.mcp.json
+claude-flow.config.json
+.swarm/
+.hive-mind/
+.claude-flow/
+memory/
+coordination/
+memory/claude-flow-data.json
+memory/sessions/*
+!memory/sessions/README.md
+memory/agents/*
+!memory/agents/README.md
+coordination/memory_bank/*
+coordination/subtasks/*
+coordination/orchestration/*
+*.db
+*.db-journal
+*.db-wal
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+claude-flow
+# Removed Windows wrapper files per user request
+hive-mind-prompt-*.txt
+
+# Chrome Web Store & Publishing
+*.pem
+web-store-credentials.json
+oauth-credentials.json
+publish-config.json
+
+# Backup files
+*.bak
+*.backup
+*~.nib
+*.orig
+
+# Certificate & Signing
+*.cert
+*.crt
+*.der
+*.p7b
+*.p7c
+*.p12
+*.pfx
+*.keystore
+
+# Local configuration
+.local/
+local.config.*
+config.local.*

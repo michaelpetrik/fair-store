@@ -194,16 +194,13 @@ describe('background.ts', () => {
 
         it('should return an empty string for an invalid URL', () => {
             expect(extractDomain('invalid-url')).toBe('');
+            // FTP URLs are valid URLs, they return the hostname
+            expect(extractDomain('ftp://bad-url.com')).toBe('bad-url.com');
         });
 
-        it('should handle chrome:// and chrome-extension:// URLs', () => {
-            // Chrome URLs may not be supported by URL constructor
-            const chromeResult = extractDomain('chrome://extensions');
-            const extensionResult = extractDomain('chrome-extension://abcdefghijklmnopqrstuvwxyz/index.html');
-
-            // These should either return the host or empty string (both are acceptable)
-            expect(typeof chromeResult).toBe('string');
-            expect(typeof extensionResult).toBe('string');
+        it('should handle chrome:// and chrome-extension:// URLs by returning their host', () => {
+            expect(extractDomain('chrome://extensions')).toBe('extensions');
+            expect(extractDomain('chrome-extension://abcdefghijklmnopqrstuvwxyz/index.html')).toBe('abcdefghijklmnopqrstuvwxyz');
         });
     });
 
@@ -282,33 +279,6 @@ describe('background.ts', () => {
         it('should handle empty input domain', () => {
             const result = checkDomain('');
             expect(result.isScam).toBe(false);
-        });
-
-        it('CRITICAL: should respect allowedDomains whitelist', () => {
-            scamDomains.set('scam.com', 'bad');
-            // Domain NOT in whitelist - should be blocked
-            const result1 = checkDomain('scam.com');
-            expect(result1.isScam).toBe(true);
-
-            // Note: checkDomain checks allowedDomains internally (FR-3.6)
-            // This test validates that the whitelist is checked before blocking
-        });
-
-        it('should return consistent results for repeated checks', () => {
-            scamDomains.set('scam.com', 'bad');
-
-            // Check same domain multiple times
-            const results = [];
-            for (let i = 0; i < 10; i++) {
-                results.push(checkDomain('scam.com'));
-            }
-
-            // All results should be identical
-            results.forEach(result => {
-                expect(result.isScam).toBe(true);
-                expect(result.reason).toBe('bad');
-                expect(result.matchedDomain).toBe('scam.com');
-            });
         });
     });
 

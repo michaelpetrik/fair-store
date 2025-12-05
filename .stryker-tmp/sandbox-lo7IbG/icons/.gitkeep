@@ -1,0 +1,17 @@
+# Icons Directory
+
+Icons need to be created for the extension:
+
+- icon16.png (16x16px)
+- icon48.png (48x48px)
+- icon128.png (128x128px)
+
+Recommended: Shield icon with "FS" or shopping cart with warning symbol.
+
+You can use tools like:
+- Figma
+- Canva
+- GIMP
+- Online icon generators
+
+Colors: Blue (#3b82f6) for main icon, Red (#dc2626) for warning states.

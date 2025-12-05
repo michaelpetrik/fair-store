@@ -1,17 +1,80 @@
 import './blocked.css';
 // Logic for the blocked page
 
+/**
+ * Sanitize text for display - prevents XSS attacks
+ */
+function sanitizeText(text: string): string {
+    if (!text || typeof text !== 'string') return '';
+    // Remove control characters and limit length
+    return text.replace(/[\x00-\x1F\x7F]/g, '').substring(0, 500);
+}
+
+/**
+ * Validate and sanitize URL
+ */
+function validateUrl(url: string): string | null {
+    if (!url || typeof url !== 'string') return null;
+
+    try {
+        const parsed = new URL(url);
+        // Only allow http and https
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+            return null;
+        }
+        return parsed.href;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Safely set text content - always use textContent, never innerHTML
+ */
+function safeSetText(elementId: string, text: string): void {
+    const element = document.getElementById(elementId);
+    if (element) {
+        // Use textContent to prevent XSS
+        element.textContent = sanitizeText(text);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     const originalUrl = params.get('url');
 
     if (!originalUrl) {
-        document.body.innerHTML = '<h1>Chyba: Neplatná URL</h1>';
+        // Safe error message - use textContent
+        const h1 = document.createElement('h1');
+        h1.textContent = 'Chyba: Neplatná URL';
+        document.body.innerHTML = '';
+        document.body.appendChild(h1);
         return;
     }
 
-    const domain = new URL(originalUrl).hostname;
-    document.getElementById('domain-name')!.textContent = domain;
+    // Security: Validate URL before processing
+    const validatedUrl = validateUrl(originalUrl);
+    if (!validatedUrl) {
+        const h1 = document.createElement('h1');
+        h1.textContent = 'Chyba: Neplatná URL';
+        document.body.innerHTML = '';
+        document.body.appendChild(h1);
+        return;
+    }
+
+    let domain: string;
+    try {
+        domain = new URL(validatedUrl).hostname;
+    } catch {
+        const h1 = document.createElement('h1');
+        h1.textContent = 'Chyba: Neplatná URL';
+        document.body.innerHTML = '';
+        document.body.appendChild(h1);
+        return;
+    }
+
+    // Security: Use textContent to prevent XSS
+    safeSetText('domain-name', domain);
 
     // Load reason from storage
     try {
@@ -30,10 +93,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        document.getElementById('reason-text')!.textContent = reason || 'Důvod nebyl nalezen.';
+        // Security: Sanitize reason text before displaying
+        safeSetText('reason-text', reason || 'Důvod nebyl nalezen.');
     } catch (error) {
         console.error('Failed to load reason:', error);
-        document.getElementById('reason-text')!.textContent = 'Nepodařilo se načíst důvod.';
+        safeSetText('reason-text', 'Nepodařilo se načíst důvod.');
     }
 
     // Event Listeners
@@ -74,16 +138,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Ignore Warning (Allow Domain)
     document.getElementById('fair-store-ignore-warning')?.addEventListener('click', async () => {
         try {
+            // Security: Validate domain before sending
+            if (!domain || typeof domain !== 'string') {
+                throw new Error('Invalid domain');
+            }
+
             // Send message to background to allow this domain
-            await chrome.runtime.sendMessage({
+            const response = await chrome.runtime.sendMessage({
                 action: 'allowDomain',
                 domain: domain
             });
 
+            // Security: Check response
+            if (!response || !response.success) {
+                throw new Error(response?.error || 'Failed to allow domain');
+            }
+
+            // Security: Validate URL before redirect
+            const safeUrl = validateUrl(validatedUrl);
+            if (!safeUrl) {
+                throw new Error('Invalid URL for redirect');
+            }
+
             // Redirect back to the original URL
-            window.location.href = originalUrl;
+            window.location.href = safeUrl;
         } catch (error) {
             console.error('Failed to allow domain:', error);
+            // Safe alert - browser sanitizes alert text
             alert('Chyba: Nepodařilo se udělit výjimku.');
         }
     });

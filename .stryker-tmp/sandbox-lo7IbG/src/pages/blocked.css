@@ -1,0 +1,356 @@
+/* Fair Store Blocked Page Styles */
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    color: white;
+    overflow: hidden;
+}
+
+.fair-store-warning-container {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    border-radius: 16px;
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    max-width: 600px;
+    width: 90%;
+    color: white;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: slideIn 0.4s ease-out;
+
+    /* Ensure container is scrollable if content is too long */
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+}
+
+/* Custom scrollbar for container */
+.fair-store-warning-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.fair-store-warning-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.fair-store-warning-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.fair-store-warning-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.fair-store-warning-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.fair-store-warning-icon {
+    width: clamp(36px, 10vw, 48px);
+    height: clamp(36px, 10vw, 48px);
+    color: white;
+    flex-shrink: 0;
+}
+
+.fair-store-warning-title {
+    margin: 0;
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.fair-store-warning-content {
+    margin-bottom: 2rem;
+}
+
+.fair-store-warning-text {
+    font-size: clamp(0.9rem, 4vw, 1rem);
+    line-height: 1.6;
+    margin: 0 0 1.5rem 0;
+}
+
+.fair-store-warning-text strong {
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* ČOI Source Badge */
+.fair-store-warning-source {
+    margin: 1.5rem 0;
+}
+
+.fair-store-source-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.fair-store-source-badge svg {
+    width: 20px;
+    height: 20px;
+    color: white;
+    flex-shrink: 0;
+}
+
+/* Expandable Details Section */
+.fair-store-details-section {
+    margin: 1.5rem 0;
+}
+
+.fair-store-details-toggle {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.fair-store-details-toggle:hover {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+.fair-store-details-toggle:active {
+    transform: translateY(0);
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.fair-store-details-toggle:focus-visible {
+    border-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.fair-store-chevron {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
+}
+
+.fair-store-details-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+}
+
+.fair-store-details-content.expanded {
+    max-height: 400px;
+    margin-top: 12px;
+    opacity: 1;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar for details */
+.fair-store-details-content.expanded::-webkit-scrollbar {
+    width: 6px;
+}
+
+.fair-store-details-content.expanded::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.fair-store-details-content.expanded::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.fair-store-coi-reason {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 3px solid rgba(255, 255, 255, 0.5);
+    animation: slideInReason 0.3s ease-out;
+}
+
+@keyframes slideInReason {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fair-store-coi-reason h3 {
+    margin: 0 0 12px 0;
+    font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.fair-store-coi-reason p {
+    margin: 0;
+    font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+    line-height: 1.6;
+    color: white;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.fair-store-warning-advice {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid white;
+    margin: 1.5rem 0 0 0;
+    font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+    line-height: 1.6;
+}
+
+.fair-store-warning-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.fair-store-btn {
+    flex: 1 1 200px;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: clamp(0.9rem, 4vw, 1rem);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    outline: none;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+
+/* Ripple effect preparation */
+.fair-store-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.4s, height 0.4s;
+}
+
+.fair-store-btn:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+.fair-store-btn svg {
+    width: 20px;
+    height: 20px;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s ease;
+}
+
+.fair-store-btn:hover svg {
+    transform: scale(1.1);
+}
+
+/* Primary button (Close Tab) */
+.fair-store-btn-primary {
+    background: white;
+    color: #dc2626;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fair-store-btn-primary:hover {
+    background: #f3f4f6;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.fair-store-btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fair-store-btn-primary:focus-visible {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
+}
+
+/* Secondary button (Ignore) */
+.fair-store-btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.fair-store-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.fair-store-btn-secondary:active {
+    transform: translateY(0);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.fair-store-btn-secondary:focus-visible {
+    border-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.fair-store-warning-footer {
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.fair-store-warning-footer p {
+    margin: 0;
+    font-size: clamp(0.75rem, 3vw, 0.875rem);
+    opacity: 0.9;
+}

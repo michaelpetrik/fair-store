@@ -16,8 +16,7 @@
     "https://www.coi.gov.cz/*"
   ],
   "background": {
-    "service_worker": "src/background.js",
-    "type": "module"
+    "service_worker": "src/background.js"
   },
   "action": {
     "default_popup": "popup/popup.html",
@@ -38,8 +37,5 @@
         "<all_urls>"
       ]
     }
-  ],
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; worker-src 'self'"
-  }
+  ]
 }
